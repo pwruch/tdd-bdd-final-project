@@ -101,6 +101,101 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.available, product.available)
         self.assertEqual(new_product.category, product.category)
 
-    #
-    # ADD YOUR TEST CASES HERE
-    #
+    def test_read_a_product(self):
+        """It should Read a Product and assert that the fields contain valid data"""
+        product = ProductFactory()
+        logging.info(f"The test product is {product}")
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        found_product = Product.find(product.id)
+        self.assertEqual(found_product.id, product.id)
+        self.assertEqual(found_product.name, product.name)
+        self.assertEqual(found_product.description, product.description)
+        self.assertEqual(found_product.price, product.price)
+        self.assertEqual(found_product.available, product.available)
+
+    def test_update_a_product(self):
+        """It should Update a Product and assert that the fields have been changed correctly"""
+        product = ProductFactory()
+        logging.info(f"The test product is {product}")
+        product.id = None
+        product.create()
+        logging.info(f"The created product is {product}")
+        self.assertIsNotNone(product.id)
+
+        test_description = "Test description"
+        product.description = test_description
+        original_id = product.id
+        product.update()
+        self.assertEqual(product.id, original_id)
+        self.assertEqual(product.description, test_description)
+
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        self.assertEqual(products[0].id, original_id)
+        self.assertEqual(products[0].description, test_description)
+
+    def test_delete_a_product(self):
+        """It should Delete a Product and assert that the product no longer exists"""
+        product = ProductFactory()
+        logging.info(f"The test product is {product}")
+        product.create()
+        logging.info(f"The created product is {product}")
+
+        products = Product.all()
+        self.assertEqual(len(products), 1)      # check that there is only one product
+
+        product.delete()    # delete the product
+        products = Product.all()
+        self.assertEqual(len(products), 0)      # check that the product no longer exists
+
+    def test_list_all_products(self):
+        """It should Retrieve all Products"""
+        products = Product.all()
+        self.assertEqual(len(products), 0)      # check that there are no products initially
+
+        for _ in range(5):                  # create 5 products
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        self.assertEqual(len(products), 5)  # check that 5 products were created
+
+    def test_find_by_name(self):
+        """It should Find a Product by name"""
+        for _ in range(5):                  # create 5 products
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        name_to_find = products[0].name
+        count = len([product for product in products if product.name == name_to_find])
+        found = Product.find_by_name(name_to_find)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.name, name_to_find)
+
+    def test_find_by_availability(self):
+        """It should Find Products according to availability"""
+        for _ in range(10):                  # create 10 products
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        available = products[0].available
+        count = len([product for product in products if product.available == available])
+        found = Product.find_by_availability(available)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.available, available)
+
+    def test_find_by_category(self):
+        """It should Find Products according to category"""
+        for _ in range(10):                  # create 10 products
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        category = products[0].category
+        count = len([product for product in products if product.category == category])
+        found = Product.find_by_category(category)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.category, category)
