@@ -256,18 +256,6 @@ class TestProductRoutes(TestCase):
         for product in data:
             self.assertEqual(product["category"], category.name)
 
-    ######################################################################
-    # Utility functions
-    ######################################################################
-
-    def get_product_count(self):
-        """save the current number of products"""
-        response = self.client.get(BASE_URL)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.get_json()
-        logging.debug("data = %s", data)
-        return len(data)
-
     def test_query_by_availability(self):
         """It should Query Products by availability"""
         products = self._create_products(10)
@@ -282,4 +270,16 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), available_count)
         # check the data just to be sure
         for product in data:
-            self.assertEqual(product["available"], True)
+            self.assertEqual(product["available"], True)  
+
+    ######################################################################
+    # Utility functions
+    ######################################################################
+
+    def get_product_count(self):
+        """save the current number of products"""
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        logging.debug("data = %s", data)
+        return len(data)
