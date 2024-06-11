@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -136,6 +136,12 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(products[0].id, original_id)
         self.assertEqual(products[0].description, test_description)
 
+    def test_update_a_product_without_id(self):
+        """It should raise a DataValidationError because of a missing product ID"""
+        product = ProductFactory()
+        product.id = None
+        self.assertRaises(DataValidationError, product.update)
+
     def test_delete_a_product(self):
         """It should Delete a Product and assert that the product no longer exists"""
         product = ProductFactory()
@@ -199,3 +205,41 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), count)
         for product in found:
             self.assertEqual(product.category, category)
+
+    def test_find_by_price(self):
+        """It should Find Products according to price"""
+        for _ in range(10):                  # create 10 products
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        price = products[0].price
+        count = len([product for product in products if product.price == price])
+        found = Product.find_by_price(price)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.price, price)            
+
+    # # Code below doesn't work - why not?
+    
+    # def test_deserialize_with_wrong_type(self):
+    #     """It should raise a DataValidationError because of incorrect data type"""
+    #     product = ProductFactory()
+    #     data = {
+    #         "name": product.name,
+    #         "description": product.description,
+    #         "price": product.price,
+    #         "available": "bad availability"
+    #     }
+    #     self.assertRaises(DataValidationError, product.deserialize(data))
+
+    # def test_deserialize_with_exceptions(self):
+    #     """It should raise exceptions because of errors"""
+    #     product = ProductFactory()
+    #     data = {
+    #         "name": product.name,
+    #         "description": product.description,
+    #         "price": product.price,
+    #         "available": "bad availability"
+    #     }
+    #     del data["name"]
+    #     self.assertRaises(DataValidationError, product.deserialize(data))
